@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testes E2E de PR — do label ao vídeo, sem mãos humanas</title>
+<style>
+  :root {
+    --ivory:   #FAF9F5;
+    --paper:   #FFFFFF;
+    --slate:   #141413;
+    --clay:    #D97757;
+    --clay-d:  #B85C3E;
+    --oat:     #E3DACC;
+    --olive:   #788C5D;
+    --rust:    #B04A3F;
+    --sky:     #6A8CAF;
+    --gray-100:#F0EEE6;
+    --gray-200:#E6E3DA;
+    --gray-300:#D1CFC5;
+    --gray-500:#87867F;
+    --gray-700:#3D3D3A;
+    --term-bg: #1B1B19;
+    --term-fg: #D8D5CC;
+    --serif: ui-serif, Georgia, "Times New Roman", serif;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ivory);
+    color: var(--gray-700);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    padding: 56px 24px 120px;
+  }
+  .page {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 250px;
+    gap: 52px;
+  }
+  @media (max-width: 960px) {
+    .page { grid-template-columns: 1fr; }
+    aside.gloss { order: 2; position: static; }
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(30px, 4.5vw, 42px);
+    color: var(--slate);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin-bottom: 16px;
+  }
+  .lead { max-width: 640px; font-size: 16.5px; margin-bottom: 6px; }
+  .lead em, p em { font-style: italic; color: var(--clay-d); }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 24px;
+    color: var(--slate);
+    letter-spacing: -0.01em;
+    margin: 56px 0 12px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 17.5px;
+    color: var(--slate);
+    margin: 26px 0 8px;
+  }
+  p { margin-bottom: 12px; max-width: 660px; }
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--gray-100);
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: var(--slate);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    background: var(--gray-100);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    max-width: 660px;
+    margin: 10px 0 14px;
+    color: var(--slate);
+  }
+  pre code { background: none; padding: 0; }
+  .part {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 72px 0 -34px;
+  }
+  .part .n {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--clay-d);
+    white-space: nowrap;
+  }
+  .part .rule { flex: 1; height: 1.5px; background: var(--gray-300); }
+  .kicker {
+    border-left: 3px solid var(--clay);
+    background: var(--gray-100);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 18px;
+    margin: 18px 0;
+    max-width: 660px;
+    font-size: 14.5px;
+    color: var(--slate);
+  }
+  .term { border-bottom: 1.5px dotted var(--clay); cursor: help; color: var(--slate); }
+
+  .demo {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 14px;
+    background: var(--paper);
+    padding: 22px 24px;
+    margin: 16px 0 10px;
+  }
+  .demo .demo-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 14px;
+  }
+  .caption { font-size: 13px; color: var(--gray-500); max-width: 660px; margin-bottom: 12px; }
+
+  button.ctl {
+    appearance: none;
+    border: 1.5px solid var(--gray-300);
+    background: var(--gray-100);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 7px 12px;
+    cursor: pointer;
+    color: var(--slate);
+    transition: background 130ms ease, border-color 130ms ease;
+  }
+  button.ctl:hover { background: var(--oat); border-color: var(--gray-500); }
+  button.ctl:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+  button.ctl.primary { background: var(--slate); color: var(--ivory); border-color: var(--slate); }
+  button.ctl.primary:hover { background: #2c2c2a; }
+
+  /* ── pipeline (seção 1) ─────────────────── */
+  .pipe-wrap { overflow-x: auto; padding-bottom: 6px; }
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    min-width: 780px;
+  }
+  @media (max-width: 760px) {
+    .pipe-wrap { overflow: visible; }
+    .pipeline { flex-direction: column; min-width: 0; }
+  }
+  .pstage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    background: #FDFDFB;
+    position: relative;
+    transition: border-color 200ms ease, background 200ms ease;
+  }
+  .pstage + .pstage { margin-left: 14px; }
+  @media (max-width: 760px) {
+    .pstage + .pstage { margin-left: 0; margin-top: 14px; }
+  }
+  .pstage .idx { font-family: var(--mono); font-size: 10px; color: var(--gray-500); letter-spacing: 0.08em; }
+  .pstage .t { font-family: var(--serif); font-size: 14px; color: var(--slate); font-weight: 500; }
+  .pstage .d { font-size: 11.5px; color: var(--gray-500); line-height: 1.4; }
+  .pstage.active { border-color: var(--clay); background: #FBF3EE; }
+  .pstage.active .idx { color: var(--clay-d); }
+  .pconn {
+    width: 22px; flex: 0 0 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-300);
+    font-family: var(--mono);
+  }
+  @media (max-width: 760px) { .pconn { display: none; } }
+
+  .prcard {
+    margin-top: 18px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    background: var(--paper);
+    padding: 14px 16px 16px;
+    max-width: 520px;
+  }
+  .prcard .head { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--gray-500); margin-bottom: 8px; font-family: var(--mono); }
+  .prcard .status { font-family: var(--mono); font-size: 13px; color: var(--olive); margin-bottom: 10px; }
+  .prcard .thumbs { display: flex; gap: 10px; margin-bottom: 10px; }
+  .prcard .thumb {
+    width: 70px; height: 124px;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--gray-500);
+    padding: 4px;
+  }
+  .prcard .vidlink { font-family: var(--mono); font-size: 12px; color: var(--sky); }
+
+  /* ── prova diferencial (seção 2.1) ───────── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+  @media (max-width: 640px) { .split { grid-template-columns: 1fr; } }
+  .lane {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    transition: background 260ms ease, border-color 260ms ease;
+  }
+  .lane .lbl { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-500); margin-bottom: 10px; }
+  .lane .screen {
+    height: 90px;
+    border-radius: 8px;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 10px;
+    transition: background 260ms ease, color 260ms ease;
+  }
+  .lane .result { font-family: var(--mono); font-size: 12.5px; color: var(--gray-500); }
+  .lane.fail .screen { background: rgba(176,74,63,0.08); color: var(--rust); }
+  .lane.fail .result { color: var(--rust); }
+  .lane.fail { border-color: var(--rust); }
+  .lane.pass .screen { background: rgba(120,140,93,0.08); color: var(--olive); }
+  .lane.pass .result { color: var(--olive); }
+  .lane.pass { border-color: var(--olive); }
+
+  /* ── cards de valor ──────────────────────── */
+  .value-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 10px 0; }
+  .vcard {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 12px;
+    background: var(--paper);
+    padding: 18px 20px;
+  }
+
+  /* ── timeline (seção 3) ──────────────────── */
+  .timeline { margin: 18px 0; max-width: 660px; }
+  .titem {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 14px;
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .titem:last-child { padding-bottom: 0; }
+  .titem .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--rust); margin-top: 4px;
+    position: relative; z-index: 1;
+  }
+  .titem::before {
+    content: "";
+    position: absolute;
+    left: 4px; top: 14px; bottom: -4px;
+    width: 1.5px;
+    background: var(--gray-300);
+  }
+  .titem:last-child::before { display: none; }
+  .titem .tt { font-family: var(--serif); font-size: 15px; color: var(--slate); margin-bottom: 3px; }
+  .titem .td { font-size: 13px; color: var(--gray-700); }
+
+  /* ── diagrama clickup→pr→intents ──────────── */
+  .flow3 { display: flex; align-items: center; gap: 10px; margin: 16px 0; flex-wrap: wrap; }
+  .flow3 .box {
+    font-family: var(--mono);
+    font-size: 12px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    background: var(--gray-100);
+    padding: 10px 16px;
+    color: var(--slate);
+  }
+  .flow3 .arrow { color: var(--gray-500); font-family: var(--mono); }
+
+  /* ── tabelas ─────────────────────────────── */
+  .tbl-wrap { overflow-x: auto; margin: 14px 0; }
+  table { border-collapse: collapse; width: 100%; max-width: 660px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--gray-300); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-500); font-weight: 500; }
+
+  /* ── glossário ───────────────────────────── */
+  aside.gloss {
+    position: sticky; top: 28px; align-self: start;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 12px;
+    background: var(--paper);
+    padding: 18px 18px 8px;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  aside.gloss .label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gray-500); margin-bottom: 12px;
+  }
+  aside.gloss dt { font-family: var(--serif); font-size: 14.5px; color: var(--slate); }
+  aside.gloss dd { font-size: 12px; line-height: 1.5; color: var(--gray-700); margin: 2px 0 13px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+<main>
+
+  <div class="eyebrow">Engenharia · QA</div>
+  <h1>Testes E2E de PR — do label ao vídeo, sem mãos humanas</h1>
+  <p class="lead">
+    Um label na PR dispara um teste ponta a ponta num device Android real. Ninguém aperta play,
+    ninguém instala nada na mão, ninguém assiste ao vivo. O resultado — vídeo, screenshots e
+    veredito — volta sozinho para dentro da PR.
+  </p>
+
+  <!-- ═══════════ PARTE 1 ═══════════ -->
+  <div class="part"><span class="n">Parte 1 · O fluxo hoje</span><div class="rule"></div></div>
+
+  <h2>Seis passos, zero intervenção</h2>
+  <p>
+    O gatilho é o label <code>e2e:run</code> numa PR. A partir daí a esteira roda sozinha até
+    devolver evidência dentro da própria conversa da PR.
+  </p>
+
+  <div class="demo">
+    <div class="demo-label">Pipeline · e2e:run até o comentário</div>
+    <div class="pipe-wrap">
+      <div class="pipeline" id="pipeline">
+        <div class="pstage" data-i="0">
+          <span class="idx">01</span>
+          <span class="t">label</span>
+          <span class="d"><code>e2e:run</code> aplicado na PR</span>
+        </div>
+        <div class="pconn">→</div>
+        <div class="pstage" data-i="1">
+          <span class="idx">02</span>
+          <span class="t">build</span>
+          <span class="d">CI builda o APK da PR</span>
+        </div>
+        <div class="pconn">→</div>
+        <div class="pstage" data-i="2">
+          <span class="idx">03</span>
+          <span class="t">seleção</span>
+          <span class="d">control plane escolhe os testes pela área do diff</span>
+        </div>
+        <div class="pconn">→</div>
+        <div class="pstage" data-i="3">
+          <span class="idx">04</span>
+          <span class="t">execução</span>
+          <span class="d">agente instala e roda o Maestro num device Android real, gravando a tela</span>
+        </div>
+        <div class="pconn">→</div>
+        <div class="pstage" data-i="4">
+          <span class="idx">05</span>
+          <span class="t">evidência</span>
+          <span class="d">vídeo, screenshots e logs sobem para o storage</span>
+        </div>
+        <div class="pconn">→</div>
+        <div class="pstage" data-i="5">
+          <span class="idx">06</span>
+          <span class="t">comentário</span>
+          <span class="d">bot atualiza a PR com o veredito e as imagens</span>
+        </div>
+      </div>
+    </div>
+    <div class="prcard" id="prcard">
+      <div class="head"><span>bot commentou</span><span id="prTime">agora</span></div>
+      <div class="status">✓ passou — commit abc1234</div>
+      <div class="thumbs">
+        <div class="thumb">screenshot do device</div>
+        <div class="thumb">screenshot do device</div>
+      </div>
+      <div class="vidlink">▶ ver vídeo da execução</div>
+    </div>
+  </div>
+  <p class="caption">
+    O pulso percorre os seis estágios em loop; ao chegar no comentário, a evidência é montada e o
+    ciclo recomeça. Sem <code>prefers-reduced-motion</code>, é o único elemento animado por conta própria.
+  </p>
+
+  <!-- ═══════════ PARTE 2 ═══════════ -->
+  <div class="part"><span class="n">Parte 2 · Onde está o valor</span><div class="rule"></div></div>
+
+  <h2>Para produto e para engenharia</h2>
+  <p>
+    O mesmo teste serve aos dois times por motivos diferentes: engenharia confia porque o teste
+    prova a mudança, não só passa; produto confia porque vê o comportamento sem precisar rodar nada.
+  </p>
+
+  <div class="value-grid">
+    <div class="vcard">
+      <h3>O teste prova o fix, não a si mesmo</h3>
+      <p>
+        O mesmo cenário roda contra o app sem o fix e contra o app com o fix. Se as duas pistas
+        derem o mesmo resultado, o teste não discrimina nada — só existe registro, não prova.
+      </p>
+      <div class="demo" style="margin:10px 0 8px;">
+        <div class="demo-label">Prova diferencial · mesmo teste, duas versões do app</div>
+        <div class="split">
+          <div class="lane fail" id="laneFail">
+            <div class="lbl">sem o fix</div>
+            <div class="screen">caiu na tela de CPF</div>
+            <div class="result">✗ falhou</div>
+          </div>
+          <div class="lane pass" id="lanePass">
+            <div class="lbl">com o fix</div>
+            <div class="screen">voltou à home</div>
+            <div class="result">✓ passou</div>
+          </div>
+        </div>
+      </div>
+      <div class="kicker">Se o teste passa nos dois, ele não testa nada.</div>
+    </div>
+
+    <div class="vcard">
+      <h3>A flag vem do próprio teste</h3>
+      <p>
+        O cenário declara a feature flag que precisa, por um canal de override que só existe em
+        builds de teste. Sem sorteio de rollout, sem tocar o painel de produção.
+      </p>
+      <pre><code>- launchApp:
+    arguments:
+      rcOverrides:
+        nova_home_v2: true</code></pre>
+    </div>
+
+    <div class="vcard">
+      <h3>Evidência que qualquer pessoa entende</h3>
+      <p>
+        Vídeo do device e screenshots aparecem direto no comentário da PR. Um reviewer de produto
+        vê o comportamento sem instalar nada, sem pedir print, sem esperar ninguém narrar.
+      </p>
+    </div>
+
+    <div class="vcard">
+      <h3>Experimental nunca bloqueia</h3>
+      <p>
+        A lane nova é informativa. Uma falha de infra — device offline, timeout de instalação —
+        não vira PR travada; ela aparece como aviso, não como bloqueio.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════ PARTE 3 ═══════════ -->
+  <div class="part"><span class="n">Parte 3 · O que o piloto endureceu</span><div class="rule"></div></div>
+
+  <h2>Oito execuções, quatro defeitos, um dia</h2>
+  <p>
+    Em cerca de 15 horas de piloto, oito execuções foram suficientes para encontrar quatro
+    defeitos latentes de plataforma — todos corrigidos no mesmo dia.
+  </p>
+
+  <div class="timeline">
+    <div class="titem">
+      <span class="dot"></span>
+      <div>
+        <div class="tt">Parser da versão do Maestro</div>
+        <div class="td">quebrava silenciosamente diante de um formato de versão fora do esperado.</div>
+      </div>
+    </div>
+    <div class="titem">
+      <span class="dot"></span>
+      <div>
+        <div class="tt">Job sem testes de post-login</div>
+        <div class="td">morria sem nenhum sinal de erro — parecia sucesso vazio.</div>
+      </div>
+    </div>
+    <div class="titem">
+      <span class="dot"></span>
+      <div>
+        <div class="tt">Exigência indevida de persona</div>
+        <div class="td">bloqueava execuções que não dependiam de nenhuma persona específica.</div>
+      </div>
+    </div>
+    <div class="titem">
+      <span class="dot" style="background:var(--olive)"></span>
+      <div>
+        <div class="tt">Flag global <code>--device</code></div>
+        <div class="td">conflitava entre execuções paralelas na mesma farm.</div>
+      </div>
+    </div>
+  </div>
+  <p>O piloto existe para achar exatamente esse tipo de coisa antes de virar produção.</p>
+
+  <!-- ═══════════ PARTE 4 ═══════════ -->
+  <div class="part"><span class="n">Parte 4 · Próximos passos</span><div class="rule"></div></div>
+
+  <h2>Roadmap curto, sem datas</h2>
+
+  <h3>Spec de teste nasce no ClickUp</h3>
+  <p>
+    A task carrega os critérios — given/when/then e ids de <span class="term" data-term="semantics">Semantics</span> —
+    e a PR só referencia o código da task. A ingestão direta já está deployada, aguardando token.
+  </p>
+  <div class="flow3">
+    <span class="box">ClickUp</span>
+    <span class="arrow">→</span>
+    <span class="box">PR</span>
+    <span class="arrow">→</span>
+    <span class="box">intents</span>
+  </div>
+
+  <h3>Compilador determinístico intent → YAML</h3>
+  <p>
+    A IA gera a intenção estruturada. Quem escreve o YAML final é código determinístico, com
+    validações — a promoção continua humana.
+  </p>
+
+  <h3>Check da PR com imagens embutidas</h3>
+  <p>
+    Um quarto device dedicado e expansão do mapa de áreas cobertas.
+  </p>
+
+</main>
+
+<!-- ── glossário ─────────────────────────── -->
+<aside class="gloss">
+  <div class="label">Glossário</div>
+  <dl>
+    <dt>lane pre_login</dt>
+    <dd>Trilha de testes que roda antes do fluxo de login, cobrindo as telas iniciais do app.</dd>
+    <dt>Prova diferencial</dt>
+    <dd>Rodar o mesmo teste contra a versão com e sem o fix. Só conta como prova se falha numa e passa na outra.</dd>
+    <dt>validated-only</dt>
+    <dd>Modo em que só entram no relatório oficial os resultados de execuções já confirmadas como confiáveis.</dd>
+    <dt>Test Intent</dt>
+    <dd>A intenção estruturada de um teste — o quê e por quê — separada do YAML final gerado a partir dela.</dd>
+    <dt>feature-map</dt>
+    <dd>Mapeamento entre áreas do código/diff e os testes E2E que cobrem cada área, usado para selecionar o que rodar.</dd>
+    <dt>Semantics</dt>
+    <dd>Identificadores estáveis de elementos na tela, usados pelo teste para localizar o que precisa tocar ou ler.</dd>
+  </dl>
+</aside>
+</div>
+
+<script>
+"use strict";
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ════════ pipeline em loop ════════ */
+(function () {
+  const stages = Array.from(document.querySelectorAll("#pipeline .pstage"));
+  const prcard = document.getElementById("prcard");
+  const prTime = document.getElementById("prTime");
+  const N = stages.length;
+  let i = 0;
+  let timer = null;
+
+  function setActive(idx) {
+    stages.forEach((s, k) => s.classList.toggle("active", k === idx));
+  }
+
+  function refreshCard() {
+    prTime.textContent = "agora";
+    prcard.style.opacity = "0";
+    requestAnimationFrame(() => {
+      prcard.style.transition = "opacity 300ms ease";
+      prcard.style.opacity = "1";
+    });
+  }
+
+  function tick() {
+    setActive(i);
+    if (i === N - 1) refreshCard();
+    i = (i + 1) % N;
+  }
+
+  if (REDUCED) {
+    setActive(N - 1);
+  } else {
+    tick();
+    timer = setInterval(tick, 1200);
+  }
+})();
+
+/* ════════ prova diferencial ════════ */
+(function () {
+  if (REDUCED) return; // estado final já é: uma vermelha, uma verde
+  const fail = document.getElementById("laneFail");
+  const pass = document.getElementById("lanePass");
+  let on = true;
+  setInterval(() => {
+    on = !on;
+    fail.style.opacity = on ? "1" : "0.45";
+    pass.style.opacity = on ? "0.45" : "1";
+  }, 1500);
+})();
+</script>
+</body>
+</html>
