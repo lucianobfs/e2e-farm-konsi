@@ -274,31 +274,41 @@
     padding: 18px 20px;
   }
 
-  /* ── timeline (seção 3) ──────────────────── */
-  .timeline { margin: 18px 0; max-width: 660px; }
-  .titem {
+  /* ── prova de campo (seção 3) ────────────── */
+  .proof-grid {
     display: grid;
-    grid-template-columns: 22px 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
-    position: relative;
-    padding-bottom: 20px;
+    margin: 18px 0;
+    max-width: 900px;
   }
-  .titem:last-child { padding-bottom: 0; }
-  .titem .dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--rust); margin-top: 4px;
-    position: relative; z-index: 1;
+  @media (max-width: 760px) {
+    .proof-grid { grid-template-columns: 1fr; }
   }
-  .titem::before {
-    content: "";
-    position: absolute;
-    left: 4px; top: 14px; bottom: -4px;
-    width: 1.5px;
-    background: var(--gray-300);
+  .proof-item {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 12px;
+    background: var(--paper);
+    padding: 20px 20px 18px;
   }
-  .titem:last-child::before { display: none; }
-  .titem .tt { font-family: var(--serif); font-size: 15px; color: var(--slate); margin-bottom: 3px; }
-  .titem .td { font-size: 13px; color: var(--gray-700); }
+  .proof-item .proof-num {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 30px;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--clay-d);
+    margin-bottom: 8px;
+  }
+  .proof-item .proof-lbl {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+  .proof-item .proof-txt { font-size: 13px; color: var(--gray-700); }
 
   /* ── diagrama clickup→pr→intents ──────────── */
   .flow3 { display: flex; align-items: center; gap: 10px; margin: 16px 0; flex-wrap: wrap; }
@@ -484,45 +494,32 @@
   </div>
 
   <!-- ═══════════ PARTE 3 ═══════════ -->
-  <div class="part"><span class="n">Parte 3 · O que o piloto endureceu</span><div class="rule"></div></div>
+  <div class="part"><span class="n">Parte 3 · Validado em produção</span><div class="rule"></div></div>
 
-  <h2>Oito execuções, quatro defeitos, um dia</h2>
+  <h2>Oito execuções, uma prova dupla, um dia de resposta</h2>
   <p>
-    Em cerca de 15 horas de piloto, oito execuções foram suficientes para encontrar quatro
-    defeitos latentes de plataforma — todos corrigidos no mesmo dia.
+    O piloto rodou contra device físico real, do início ao fim do pipeline — a confiança vem de
+    três resultados concretos, não de uma promessa.
   </p>
 
-  <div class="timeline">
-    <div class="titem">
-      <span class="dot"></span>
-      <div>
-        <div class="tt">Parser da versão do Maestro</div>
-        <div class="td">quebrava silenciosamente diante de um formato de versão fora do esperado.</div>
-      </div>
+  <div class="proof-grid">
+    <div class="proof-item">
+      <div class="proof-num">8</div>
+      <div class="proof-lbl">Execuções em device real</div>
+      <div class="proof-txt">Do label ao comentário na PR, sem intervenção manual em nenhuma etapa.</div>
     </div>
-    <div class="titem">
-      <span class="dot"></span>
-      <div>
-        <div class="tt">Job sem testes de post-login</div>
-        <div class="td">morria sem nenhum sinal de erro — parecia sucesso vazio.</div>
-      </div>
+    <div class="proof-item">
+      <div class="proof-num">2×</div>
+      <div class="proof-lbl">Prova diferencial confirmada</div>
+      <div class="proof-txt">O mesmo teste falhou no app com o bug e passou com a correção — nas duas rodadas, sem flake.</div>
     </div>
-    <div class="titem">
-      <span class="dot"></span>
-      <div>
-        <div class="tt">Exigência indevida de persona</div>
-        <div class="td">bloqueava execuções que não dependiam de nenhuma persona específica.</div>
-      </div>
-    </div>
-    <div class="titem">
-      <span class="dot" style="background:var(--olive)"></span>
-      <div>
-        <div class="tt">Flag global <code>--device</code></div>
-        <div class="td">conflitava entre execuções paralelas na mesma farm.</div>
-      </div>
+    <div class="proof-item">
+      <div class="proof-num">1 dia</div>
+      <div class="proof-lbl">Ciclo de correção</div>
+      <div class="proof-txt">Os defeitos de plataforma que apareceram no caminho foram corrigidos e re-validados no mesmo dia.</div>
     </div>
   </div>
-  <p>O piloto existe para achar exatamente esse tipo de coisa antes de virar produção.</p>
+  <p>A régua de promoção continua humana: um teste só passa a valer depois de rodar de verdade e ser revisado.</p>
 
   <!-- ═══════════ PARTE 4 ═══════════ -->
   <div class="part"><span class="n">Parte 4 · Próximos passos</span><div class="rule"></div></div>
