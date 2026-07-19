@@ -520,26 +520,94 @@
     </div>
   </div>
   <p>A régua de promoção continua humana: um teste só passa a valer depois de rodar de verdade e ser revisado.</p>
+  <p>
+    Depois dessas oito execuções veio a prova seguinte: a PR piloto <code>#1074</code> rodou verde
+    com <code>acceptance_criteria_source: clickup</code> — a spec saiu inteira do card do ClickUp,
+    sem nenhum aviso.
+  </p>
 
   <!-- ═══════════ PARTE 4 ═══════════ -->
-  <div class="part"><span class="n">Parte 4 · Próximos passos</span><div class="rule"></div></div>
+  <div class="part"><span class="n">Parte 4 · Entregue: a spec nasce no ClickUp</span><div class="rule"></div></div>
 
-  <h2>Roadmap curto, sem datas</h2>
-
-  <h3>Spec de teste nasce no ClickUp</h3>
+  <h2>A spec de teste agora vem do card, não da PR</h2>
   <p>
-    A task carrega os critérios — given/when/then e ids de <span class="term" data-term="semantics">Semantics</span> —
-    e a PR só referencia o código da task. A ingestão direta já está deployada, aguardando token.
-    Quando a task não está acessível, a mesma spec escrita direto na descrição da PR vale igual:
-    o pipeline usa o que estiver disponível e registra de onde veio.
+    A ingestão direta está ligada em produção: o control-plane resolve o código
+    <code>AC-xxxx</code> a partir do título da PR, busca a descrição do card correspondente no
+    ClickUp e usa a spec de lá. O corpo da PR continua valendo como fallback de primeira classe —
+    não uma solução provisória, uma rota permanente para quando o card não tem spec. Cada job
+    grava de onde a spec veio: <code>acceptance_criteria_source: clickup</code> ou
+    <code>pr_body</code>.
   </p>
   <div class="flow3">
-    <span class="box">ClickUp</span>
+    <span class="box">PR → AC-xxxx</span>
     <span class="arrow">→</span>
-    <span class="box">PR</span>
+    <span class="box">card ClickUp</span>
     <span class="arrow">→</span>
-    <span class="box">intents</span>
+    <span class="box">spec test-intent/v1</span>
   </div>
+  <div class="kicker">
+    Prova real: a PR piloto <code>#1074</code> rodou verde com
+    <code>acceptance_criteria_source: clickup</code> — a spec saiu 100% do card, sem nenhum aviso.
+  </div>
+
+  <h3>Um formato canônico: <span class="term" data-term="test-intent">test-intent/v1</span></h3>
+  <p>
+    A spec vive dentro de um bloco de código cercado cuja primeira linha é exatamente
+    <code>spec: test-intent/v1</code>. O card pode ter prosa ao redor — o pipeline extrai só o
+    bloco. Formato mergeado em <code>konsi-mobile-test-platform</code> (PR #20), documentado em
+    <code>docs/test-intent-spec.md</code>. Cada job grava também o formato reconhecido:
+    <code>acceptance_criteria_format: test-intent/v1</code> ou <code>freeform</code>.
+  </p>
+
+  <div class="demo">
+    <div class="demo-label">Template · test-intent/v1</div>
+    <pre id="tiTemplate"><code>spec: test-intent/v1
+clickup_id: AC-XXXX
+user_story: &gt;-
+  Como &lt;persona&gt;, quando &lt;contexto&gt;, quero &lt;ação/resultado&gt;.
+env:
+  lane: pre_login
+  flags:
+    FF_nome_da_flag:
+      value: true
+      mechanism: rcOverrides
+criteria:
+  - id: AC-XXXX-C1
+    kind: e2e
+    given: &lt;estado inicial do app&gt;
+    when: &lt;passos do usuário&gt;
+    then: &lt;resultado observável na UI&gt;
+    oracle: ui_state
+    risk: read_only
+    semantics_ids: [&lt;identifiers dos elementos críticos&gt;]
+  - id: AC-XXXX-C2
+    kind: unit
+    given: &lt;condição&gt;
+    when: &lt;variação&gt;
+    then: &lt;comportamento esperado&gt;
+    covered_by: &lt;onde a cobertura unit mora&gt;</code></pre>
+    <button class="ctl" id="copyTi" type="button">copiar template</button>
+  </div>
+  <p>
+    Obrigatório: <code>user_story</code> e ao menos um critério em <code>criteria</code>, cada um
+    com <code>id</code> no padrão <code>AC-&lt;n&gt;-C&lt;n&gt;</code>, <code>kind</code>
+    (<code>e2e</code> ou <code>unit</code>), <code>given</code>, <code>when</code> e
+    <code>then</code> — sem isso o gate reprova. Opcional recomendado: <code>env.lane</code>,
+    <code>env.flags</code>, <code>oracle</code>, <code>risk</code>, <code>semantics_ids</code>,
+    <code>constraints</code>, <code>covered_by</code>.
+  </p>
+
+  <h3>Gate obrigatório no CI</h3>
+  <p>
+    Com a label <code>e2e:run</code>, o check <strong>Gate de spec E2E</strong> reprova a PR
+    quando não existe um bloco canônico válido nem no card, nem no corpo da PR. Entrou pela PR
+    <code>#1080</code> no <code>konsi-app</code>, já aprovada, em rollout final.
+  </p>
+
+  <!-- ═══════════ PARTE 5 ═══════════ -->
+  <div class="part"><span class="n">Parte 5 · Próximos passos</span><div class="rule"></div></div>
+
+  <h2>Roadmap curto, sem datas</h2>
 
   <h3>Compilador determinístico intent → YAML</h3>
   <p>
@@ -566,6 +634,8 @@
     <dd>Modo em que só entram no relatório oficial os resultados de execuções já confirmadas como confiáveis.</dd>
     <dt>Test Intent</dt>
     <dd>A intenção estruturada de um teste — o quê e por quê — separada do YAML final gerado a partir dela.</dd>
+    <dt>test-intent/v1</dt>
+    <dd>Formato canônico da spec: bloco de código cercado cuja primeira linha é exatamente "spec: test-intent/v1". O pipeline extrai só esse bloco, mesmo com prosa em volta no card.</dd>
     <dt>feature-map</dt>
     <dd>Mapeamento entre áreas do código/diff e os testes E2E que cobrem cada área, usado para selecionar o que rodar.</dd>
     <dt>Semantics</dt>
@@ -625,6 +695,23 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
     fail.style.opacity = on ? "1" : "0.45";
     pass.style.opacity = on ? "0.45" : "1";
   }, 1500);
+})();
+
+/* ════════ copiar template test-intent ════════ */
+(function () {
+  const btn = document.getElementById("copyTi");
+  const pre = document.getElementById("tiTemplate");
+  if (!btn || !pre) return;
+  const label = btn.textContent;
+  btn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(pre.textContent);
+    } catch (e) {
+      return;
+    }
+    btn.textContent = "copiado ✓";
+    setTimeout(() => { btn.textContent = label; }, 1600);
+  });
 })();
 </script>
 </body>
