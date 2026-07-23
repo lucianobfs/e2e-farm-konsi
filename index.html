@@ -45,7 +45,7 @@
     gap: 52px;
   }
   @media (max-width: 960px) {
-    .page { grid-template-columns: 1fr; }
+    .page { grid-template-columns: minmax(0, 1fr); }
     aside.gloss { order: 2; position: static; }
   }
 
@@ -122,6 +122,11 @@
     white-space: nowrap;
   }
   .part .rule { flex: 1; height: 1.5px; background: var(--gray-300); }
+  @media (max-width: 480px) {
+    .part { flex-wrap: wrap; row-gap: 6px; }
+    .part .n { white-space: normal; }
+    .part .rule { min-width: 40px; }
+  }
   .kicker {
     border-left: 3px solid var(--clay);
     background: var(--gray-100);
@@ -133,6 +138,7 @@
     color: var(--slate);
   }
   .term { border-bottom: 1.5px dotted var(--clay); cursor: help; color: var(--slate); }
+  .updated { font-family: var(--mono); color: var(--gray-500); text-transform: none; letter-spacing: 0; }
 
   .demo {
     border: 1.5px solid var(--gray-300);
@@ -310,6 +316,76 @@
   }
   .proof-item .proof-txt { font-size: 13px; color: var(--gray-700); }
 
+  /* ── fan-out (pai → filhos) ──────────────── */
+  .fanout { display: flex; flex-direction: column; gap: 10px; }
+  .fo-parent {
+    border: 1.5px solid var(--slate);
+    border-radius: 10px;
+    background: var(--gray-100);
+    padding: 12px 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .fo-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--slate);
+    background: var(--oat);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+  .fo-parent .fo-name { font-family: var(--serif); font-size: 14px; color: var(--slate); font-weight: 500; }
+  .fo-sub { font-size: 11px; color: var(--gray-500); }
+  .fo-arrows {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    text-align: center;
+    color: var(--gray-300);
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  @media (max-width: 640px) { .fo-arrows { display: none; } }
+  .fo-children { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 640px) { .fo-children { grid-template-columns: 1fr; } }
+  .fo-child {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    background: #FDFDFB;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: border-color 260ms ease, background 260ms ease;
+  }
+  .fo-child .fo-tag { background: none; padding: 0; color: var(--gray-500); }
+  .fo-child .fo-state {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--gray-500);
+    transition: color 260ms ease;
+  }
+  .fo-child .fo-state[data-state="running"] { color: var(--clay-d); }
+  .fo-child .fo-state[data-state="passed"] { color: var(--olive); }
+  .fo-child[data-active="1"] { border-color: var(--clay); background: #FBF3EE; }
+  .fo-child[data-active="1"] .fo-state { animation: foPulse 1s ease-in-out infinite; }
+  .fo-child[data-done="1"] { border-color: var(--olive); }
+  @keyframes foPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .fo-check {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--gray-500);
+    transition: border-color 260ms ease, color 260ms ease, background 260ms ease;
+  }
+  .fo-check[data-state="pass"] { border-color: var(--olive); color: var(--olive); background: rgba(120,140,93,0.08); }
+
   /* ── diagrama clickup→pr→intents ──────────── */
   .flow3 { display: flex; align-items: center; gap: 10px; margin: 16px 0; flex-wrap: wrap; }
   .flow3 .box {
@@ -357,7 +433,7 @@
 <div class="page">
 <main>
 
-  <div class="eyebrow">Engenharia · QA</div>
+  <div class="eyebrow">Engenharia · QA <span class="updated">· atualizado em 23/07/2026</span></div>
   <h1>Testes E2E de PR — do label ao vídeo, sem mãos humanas</h1>
   <p class="lead">
     Um label na PR dispara um teste ponta a ponta num device Android real. Ninguém aperta play,
@@ -601,24 +677,169 @@ criteria:
   <p>
     Com a label <code>e2e:run</code>, o check <strong>Gate de spec E2E</strong> reprova a PR
     quando não existe um bloco canônico válido nem no card, nem no corpo da PR. Entrou pela PR
-    <code>#1080</code> no <code>konsi-app</code>, já aprovada, em rollout final.
+    <code>#1080</code> no <code>konsi-app</code>, que segue aberta: recebeu 1 aprovação em 18/jul
+    e aguarda a segunda revisão para poder mergear. Ainda não está em produção.
   </p>
 
   <!-- ═══════════ PARTE 5 ═══════════ -->
-  <div class="part"><span class="n">Parte 5 · Próximos passos</span><div class="rule"></div></div>
+  <div class="part"><span class="n">Parte 5 · Fan-out multi-teste por PR</span><div class="rule"></div></div>
+
+  <h2>Uma PR, vários testes, ao mesmo tempo</h2>
+  <p>
+    Até 21/jul, uma PR com N casos de teste rodava todos em sequência, dentro de um único job,
+    num único device — o segundo caso só começava quando o primeiro terminasse. Desde 22/jul, o
+    control-plane divide o trabalho: cria 1 <span class="term" data-term="job-pai">job pai</span> —
+    que nunca executa teste, só coordena — e N <span class="term" data-term="job-filho">jobs
+    filho</span>, um por caso de teste, que podem rodar em devices diferentes ao mesmo tempo. A PR
+    continua recebendo um único Check agregado no final, como sempre.
+  </p>
+
+  <div class="demo">
+    <div class="demo-label">Fan-out · 1 job pai → N jobs filho → 1 Check agregado</div>
+    <div class="fanout">
+      <div class="fo-parent">
+        <span class="fo-tag">job pai</span>
+        <span class="fo-name">coordenador</span>
+        <span class="fo-sub">nunca executa teste — só orquestra</span>
+      </div>
+      <div class="fo-arrows" aria-hidden="true"><span>↓</span><span>↓</span><span>↓</span></div>
+      <div class="fo-children" id="foChildren">
+        <div class="fo-child" data-c="0">
+          <span class="fo-tag">filho 1</span>
+          <span class="fo-state" data-state="queued">na fila</span>
+          <span class="fo-sub">device A</span>
+        </div>
+        <div class="fo-child" data-c="1">
+          <span class="fo-tag">filho 2</span>
+          <span class="fo-state" data-state="queued">na fila</span>
+          <span class="fo-sub">device B</span>
+        </div>
+        <div class="fo-child" data-c="2">
+          <span class="fo-tag">filho 3</span>
+          <span class="fo-state" data-state="queued">na fila</span>
+          <span class="fo-sub">aguarda vaga liberar</span>
+        </div>
+      </div>
+      <div class="fo-check" id="foCheck" data-state="pending">Check agregado da PR: aguardando…</div>
+    </div>
+  </div>
+  <p class="caption">
+    O cap de execuções simultâneas por PR é configurável
+    (<code>MAESTRO_MAX_ACTIVE_CHILDREN_PER_PARENT</code>, padrão 2) — por isso o terceiro filho
+    espera uma vaga liberar antes de começar. O diagrama roda em loop; sem
+    <code>prefers-reduced-motion</code>, ele para no estado final (os três passaram, Check verde).
+  </p>
+
+  <div class="kicker">
+    <strong>No ar desde 22/jul:</strong> plataforma PR <code>#29</code>
+    (<code>KonsiLabs/konsi-mobile-test-platform</code>), mergeada e em produção — deploy confirmado
+    às 15:39 UTC do dia 22/jul (run <code>29934291511</code>). 329 testes automatizados cobrem o
+    fan-out; zero mudança no agente que roda dentro do device — todo o trabalho novo é no
+    control-plane. A entrega também corrigiu um bug real de produção: um campo <code>None</code>
+    era persistido como a string "null", o que deixava um <code>finished_at</code> fantasma em
+    jobs reabertos.
+  </div>
+
+  <p>
+    <strong>O que ainda falta — por isso a manchete é "em produção", não "validado com
+    devices":</strong> existe uma PR de validação pronta, <code>konsi-app #1084</code>, com
+    exatamente 3 casos de teste <code>test-intent/v1</code> (abrir Ajuda, abrir Ajustes, rolar o
+    dashboard até o topo). O esperado é 2 rodando em paralelo e 1 na fila — mas essa prova física
+    ainda não rodou: o host da farm no escritório caiu em 22/jul, e os 2 devices da lane
+    <code>post_login</code> ficaram desconectados do USB. Assim que o host voltar e a label
+    <code>e2e:run</code> for aplicada na <code>#1084</code>, essa prova acontece.
+  </p>
+  <p>
+    O que já dá confiança de que o paralelismo funciona de verdade, fisicamente: em 21/jul (PR
+    <code>#24</code>) o mesmo teste rodou ao mesmo tempo em 2 devices físicos diferentes — um
+    moto g35 e um Galaxy A15, mesmo APK — e as duas execuções deram <strong>passou</strong>, em
+    37s e 44s. E o host está preparado desde 20/jul (Maestro 2.7.0, uma porta de driver por
+    worker) para paralelismo real de execução, não só de agendamento.
+  </p>
+
+  <h3>A semana na farm (20–22/jul)</h3>
+  <p>
+    O fan-out foi o topo de uma sequência de entregas na mesma semana — cada uma resolvendo um
+    problema concreto de operar uma farm de devices de verdade.
+  </p>
+  <div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr><th>Entrega</th><th>PR</th><th>Data</th><th>O que mudou</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Alocação paralela de devices</td>
+        <td><code>#22</code></td>
+        <td>20/jul</td>
+        <td>
+          O sistema aprendeu a reservar vários celulares ao mesmo tempo com
+          <span class="term" data-term="lease">leases</span> (empréstimos com dono e prazo), um
+          scheduler que prioriza PR sobre trabalho de fundo e um worker por aparelho físico.
+          +4.127 linhas em 31 arquivos — é a fundação sobre a qual o fan-out foi construído.
+        </td>
+      </tr>
+      <tr>
+        <td>Menos alarme falso</td>
+        <td><code>#24</code>, <code>#25</code></td>
+        <td>21/jul</td>
+        <td>
+          A farm passou a distinguir "o app tem bug" de "o ambiente não estava pronto". Se o APK
+          não tem o canal de feature flag esperado, ou se o celular "esqueceu" a sessão logada, o
+          teste vira "pulado por pré-condição" (Check neutro) em vez de reprovar a PR. Ressalva: os
+          2 devices da lane <code>post_login</code> seguem aguardando religamento e reaquecimento
+          manual.
+        </td>
+      </tr>
+      <tr>
+        <td>Celulares nunca ficam parados</td>
+        <td><code>#26</code></td>
+        <td>21/jul</td>
+        <td>
+          Quando a fila de PR está vazia, os devices rodam testes leves de manutenção, só leitura
+          (<span class="term" data-term="filler">filler</span>). Cada execução também passou a
+          registrar uma "impressão digital" das feature flags ativas, para auditoria.
+        </td>
+      </tr>
+      <tr>
+        <td>Máquina de build dedicada</td>
+        <td>—</td>
+        <td>22/jul</td>
+        <td>
+          O build do APK para E2E ganhou um runner de CI próprio
+          (<code>ubuntu-24.04-4core-e2e</code>, 4 cores/16GB) no <code>konsi-app</code>.
+          Provisionado, estreia junto com a validação física — nenhum build real ainda o usou.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- ═══════════ PARTE 6 ═══════════ -->
+  <div class="part"><span class="n">Parte 6 · Próximos passos</span><div class="rule"></div></div>
 
   <h2>Roadmap curto, sem datas</h2>
 
   <h3>Compilador determinístico intent → YAML</h3>
   <p>
-    A IA gera a intenção estruturada. Quem escreve o YAML final é código determinístico, com
-    validações — a promoção continua humana.
+    A IA gera a intenção estruturada; quem escreve o YAML final é código determinístico. O
+    fan-out já cobriu uma fatia disso: o novo <code>app/slicing.py</code> deriva os testes de
+    forma determinística a partir do <code>reference_flow</code> de cada spec, com validações de
+    catálogo antes de virar job. Não é peça 100% entregue — falta estender esse determinismo para
+    o restante da geração de YAML —, mas é uma base real que o fan-out já validou em produção.
   </p>
 
   <h3>Check da PR com imagens embutidas</h3>
   <p>
     Um quarto device dedicado e expansão do mapa de áreas cobertas.
   </p>
+
+  <div class="kicker">
+    <strong>Próximo passo concreto:</strong> religar o host da farm no escritório, reaquecer os 2
+    devices da lane <code>post_login</code> e aplicar a label <code>e2e:run</code> na PR
+    <code>konsi-app #1084</code> — para colher a prova física do fan-out: 2 casos rodando em
+    paralelo e 1 na fila.
+  </div>
 
 </main>
 
@@ -640,6 +861,16 @@ criteria:
     <dd>Mapeamento entre áreas do código/diff e os testes E2E que cobrem cada área, usado para selecionar o que rodar.</dd>
     <dt>Semantics</dt>
     <dd>Identificadores estáveis de elementos na tela, usados pelo teste para localizar o que precisa tocar ou ler.</dd>
+    <dt>job pai / job filho</dt>
+    <dd>No fan-out, o job pai coordena e nunca executa teste; cada job filho roda exatamente um caso de teste, podendo usar um device diferente dos irmãos.</dd>
+    <dt>fan-out</dt>
+    <dd>Dividir uma PR com N casos de teste em N execuções (jobs filho) que podem rodar em paralelo, em vez de uma única execução sequencial.</dd>
+    <dt>cap de concorrência</dt>
+    <dd>Limite de jobs filho ativos ao mesmo tempo por PR. Configurável via <code>MAESTRO_MAX_ACTIVE_CHILDREN_PER_PARENT</code>, padrão 2.</dd>
+    <dt>filler</dt>
+    <dd>Teste leve de manutenção, só leitura, que ocupa um device quando a fila de PR está vazia — para o aparelho nunca ficar parado.</dd>
+    <dt>lease de device</dt>
+    <dd>Reserva de um device físico com dono e prazo, usada pelo scheduler para alocar vários celulares ao mesmo tempo sem dois jobs colidirem no mesmo aparelho.</dd>
   </dl>
 </aside>
 </div>
@@ -695,6 +926,56 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
     fail.style.opacity = on ? "1" : "0.45";
     pass.style.opacity = on ? "0.45" : "1";
   }, 1500);
+})();
+
+/* ════════ fan-out: job pai → jobs filho → check agregado ════════ */
+(function () {
+  const children = Array.from(document.querySelectorAll("#foChildren .fo-child"));
+  const check = document.getElementById("foCheck");
+  if (!children.length || !check) return;
+
+  const STATE_LABEL = { queued: "na fila", running: "rodando", passed: "passou" };
+  // cada frame = estado dos 3 filhos; cap de 2 ativos por vez (running) ao mesmo tempo
+  const frames = [
+    ["queued", "queued", "queued"],
+    ["running", "running", "queued"],
+    ["passed", "running", "running"],
+    ["passed", "passed", "running"],
+    ["passed", "passed", "passed"],
+  ];
+  const holds = [1100, 1400, 1400, 1400, 2600];
+
+  function applyFrame(idx) {
+    const states = frames[idx];
+    children.forEach((el, k) => {
+      const st = states[k];
+      const stateEl = el.querySelector(".fo-state");
+      if (!stateEl) return;
+      stateEl.dataset.state = st;
+      stateEl.textContent = STATE_LABEL[st];
+      el.dataset.active = st === "running" ? "1" : "0";
+      el.dataset.done = st === "passed" ? "1" : "0";
+    });
+    const allPassed = states.every((s) => s === "passed");
+    check.dataset.state = allPassed ? "pass" : "pending";
+    check.textContent = allPassed
+      ? "✓ Check agregado da PR: passou"
+      : "Check agregado da PR: aguardando…";
+  }
+
+  if (REDUCED) {
+    applyFrame(frames.length - 1);
+    return;
+  }
+
+  let i = 0;
+  function step() {
+    applyFrame(i);
+    const delay = holds[i];
+    i = (i + 1) % frames.length;
+    setTimeout(step, delay);
+  }
+  step();
 })();
 
 /* ════════ copiar template test-intent ════════ */
