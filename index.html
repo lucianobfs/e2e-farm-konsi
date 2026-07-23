@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Testes E2E de PR — do label ao vídeo, sem mãos humanas</title>
+<title>Um robô que testa o app da Konsi sozinho — e manda vídeo como prova</title>
 <style>
   :root {
     --ivory:   #FAF9F5;
@@ -434,69 +434,89 @@
 <main>
 
   <div class="eyebrow">Engenharia · QA <span class="updated">· atualizado em 23/07/2026</span></div>
-  <h1>Testes E2E de PR — do label ao vídeo, sem mãos humanas</h1>
+  <h1>Um robô que testa o app da Konsi em celulares de verdade — sozinho, a cada mudança de código</h1>
   <p class="lead">
-    Um label na PR dispara um teste ponta a ponta num device Android real. Ninguém aperta play,
-    ninguém instala nada na mão, ninguém assiste ao vivo. O resultado — vídeo, screenshots e
-    veredito — volta sozinho para dentro da PR.
+    Este projeto instala e usa o aplicativo da Konsi num celular Android físico, de verdade, numa
+    bancada do escritório — sem ninguém apertar play, sem ninguém instalar nada na mão, sem
+    ninguém assistir ao vivo. Ele entra em ação sozinho toda vez que alguém propõe uma mudança no
+    código do app, e devolve como prova um vídeo da tela, capturas de tela e um veredito simples:
+    passou ou falhou.
   </p>
+  <div class="kicker">
+    <strong>Para quem chegou agora:</strong> pessoas de engenharia propõem mudanças no código do
+    aplicativo da Konsi — cada proposta é chamada de <span class="term" data-term="pr">PR</span>
+    (do inglês <em>pull request</em>) — e cada uma passa pela revisão de outra pessoa antes de
+    entrar na versão real do app. Este projeto acrescenta um passo automático a essa revisão:
+    quando alguém marca a proposta com uma etiqueta (<span class="term" data-term="label">label</span>,
+    no jargão do time), um celular Android físico de uma bancada de aparelhos no escritório — o
+    time chama essa bancada de <span class="term" data-term="farm">device farm</span>, ou só "a
+    farm" — instala essa versão do app e a usa como um cliente usaria, do início ao fim: é o que o
+    time chama de teste E2E, ou "ponta a ponta". O vídeo dessa navegação e o veredito (passou ou
+    falhou) voltam sozinhos para dentro da própria conversa da proposta, para qualquer pessoa
+    assistir, sem precisar saber programar ou instalar nada.
+  </div>
 
   <!-- ═══════════ PARTE 1 ═══════════ -->
   <div class="part"><span class="n">Parte 1 · O fluxo hoje</span><div class="rule"></div></div>
 
-  <h2>Seis passos, zero intervenção</h2>
+  <h2>Seis passos, do gatilho ao veredito, sem ninguém no meio</h2>
   <p>
-    O gatilho é o label <code>e2e:run</code> numa PR. A partir daí a esteira roda sozinha até
-    devolver evidência dentro da própria conversa da PR.
+    O gatilho é a etiqueta <code>e2e:run</code> aplicada numa PR. A partir daí, a esteira
+    automática — também chamada de <span class="term" data-term="ci">CI</span>, o sistema que
+    compila e testa o código sozinho a cada mudança — assume: compila o pacote instalável do app
+    (o <span class="term" data-term="apk">APK</span>), um serviço central que organiza a fila de
+    testes (o <span class="term" data-term="control-plane">control-plane</span>) decide quais
+    testes rodar olhando para a parte do código que mudou, e um celular real executa tudo sozinho
+    até devolver a prova dentro da própria conversa da proposta.
   </p>
 
   <div class="demo">
-    <div class="demo-label">Pipeline · e2e:run até o comentário</div>
+    <div class="demo-label">Esteira automática (pipeline) · da etiqueta até o comentário</div>
     <div class="pipe-wrap">
       <div class="pipeline" id="pipeline">
         <div class="pstage" data-i="0">
           <span class="idx">01</span>
-          <span class="t">label</span>
+          <span class="t">etiqueta</span>
           <span class="d"><code>e2e:run</code> aplicado na PR</span>
         </div>
         <div class="pconn">→</div>
         <div class="pstage" data-i="1">
           <span class="idx">02</span>
-          <span class="t">build</span>
-          <span class="d">CI builda o APK da PR</span>
+          <span class="t">compilação</span>
+          <span class="d">CI compila o APK da PR</span>
         </div>
         <div class="pconn">→</div>
         <div class="pstage" data-i="2">
           <span class="idx">03</span>
           <span class="t">seleção</span>
-          <span class="d">control plane escolhe os testes pela área do diff</span>
+          <span class="d">control-plane escolhe os testes pela parte do código que mudou</span>
         </div>
         <div class="pconn">→</div>
         <div class="pstage" data-i="3">
           <span class="idx">04</span>
           <span class="t">execução</span>
-          <span class="d">agente instala e roda o Maestro num device Android real, gravando a tela</span>
+          <span class="d">um programa instala o app e roda o teste automático (Maestro) num celular Android real, gravando a tela</span>
         </div>
         <div class="pconn">→</div>
         <div class="pstage" data-i="4">
           <span class="idx">05</span>
           <span class="t">evidência</span>
-          <span class="d">vídeo, screenshots e logs sobem para o storage</span>
+          <span class="d">vídeo, capturas de tela e registros técnicos são salvos automaticamente</span>
         </div>
         <div class="pconn">→</div>
         <div class="pstage" data-i="5">
           <span class="idx">06</span>
           <span class="t">comentário</span>
-          <span class="d">bot atualiza a PR com o veredito e as imagens</span>
+          <span class="d">um robô comenta na PR com o veredito e atualiza o selo (Check) de aprovado ou reprovado</span>
         </div>
       </div>
     </div>
     <div class="prcard" id="prcard">
       <div class="head"><span>bot commentou</span><span id="prTime">agora</span></div>
-      <div class="status">✓ passou — commit abc1234</div>
+      <div class="status">✓ passou — versão abc1234</div>
       <div class="thumbs">
-        <div class="thumb">screenshot do device</div>
-        <div class="thumb">screenshot do device</div>
+        <div class="thumb">captura de tela do celular</div>
+        <div class="thumb">captura de tela do celular</div>
       </div>
       <div class="vidlink">▶ ver vídeo da execução</div>
     </div>
@@ -517,21 +537,22 @@
 
   <div class="value-grid">
     <div class="vcard">
-      <h3>O teste prova o fix, não a si mesmo</h3>
+      <h3>O teste prova a correção — não só que rodou</h3>
       <p>
-        O mesmo cenário roda contra o app sem o fix e contra o app com o fix. Se as duas pistas
-        derem o mesmo resultado, o teste não discrimina nada — só existe registro, não prova.
+        O mesmo cenário roda contra o app sem a correção e contra o app com a correção. Se as duas
+        versões derem o mesmo resultado, o teste não está distinguindo nada — só existe registro,
+        não prova.
       </p>
       <div class="demo" style="margin:10px 0 8px;">
         <div class="demo-label">Prova diferencial · mesmo teste, duas versões do app</div>
         <div class="split">
           <div class="lane fail" id="laneFail">
-            <div class="lbl">sem o fix</div>
+            <div class="lbl">sem a correção</div>
             <div class="screen">caiu na tela de CPF</div>
             <div class="result">✗ falhou</div>
           </div>
           <div class="lane pass" id="lanePass">
-            <div class="lbl">com o fix</div>
+            <div class="lbl">com a correção</div>
             <div class="screen">voltou à home</div>
             <div class="result">✓ passou</div>
           </div>
@@ -541,10 +562,12 @@
     </div>
 
     <div class="vcard">
-      <h3>A flag vem do próprio teste</h3>
+      <h3>O teste já liga sozinho o recurso certo</h3>
       <p>
-        O cenário declara a feature flag que precisa, por um canal de override que só existe em
-        builds de teste. Sem sorteio de rollout, sem tocar o painel de produção.
+        O cenário já diz qual <span class="term" data-term="feature-flag">feature flag</span> —
+        um interruptor remoto que liga ou desliga um recurso do app sem precisar publicar uma
+        versão nova — precisa estar ativada, usando um canal especial que só existe nas versões de
+        teste. Sem sorteio de usuários (rollout), sem tocar no painel real de produção.
       </p>
       <pre><code>- launchApp:
     arguments:
@@ -555,39 +578,41 @@
     <div class="vcard">
       <h3>Evidência que qualquer pessoa entende</h3>
       <p>
-        Vídeo do device e screenshots aparecem direto no comentário da PR. Um reviewer de produto
-        vê o comportamento sem instalar nada, sem pedir print, sem esperar ninguém narrar.
+        Vídeo do celular e capturas de tela aparecem direto no comentário da PR. Uma pessoa
+        revisora de produto vê o comportamento sem instalar nada, sem pedir print, sem esperar
+        ninguém narrar.
       </p>
     </div>
 
     <div class="vcard">
-      <h3>Experimental nunca bloqueia</h3>
+      <h3>Um recurso experimental nunca trava a proposta</h3>
       <p>
-        A lane nova é informativa. Uma falha de infra — device offline, timeout de instalação —
-        não vira PR travada; ela aparece como aviso, não como bloqueio.
+        Essa trilha de testes nova — o time chama de <em>lane</em> — ainda é só informativa. Uma
+        falha de infraestrutura — celular sem conexão, tempo esgotado na instalação — não trava a
+        PR; ela aparece como aviso, não como bloqueio.
       </p>
     </div>
   </div>
 
   <!-- ═══════════ PARTE 3 ═══════════ -->
-  <div class="part"><span class="n">Parte 3 · Validado em produção</span><div class="rule"></div></div>
+  <div class="part"><span class="n">Parte 3 · Provado com celular físico, de verdade</span><div class="rule"></div></div>
 
-  <h2>Oito execuções, uma prova dupla, um dia de resposta</h2>
+  <h2>Oito testes reais, prova em dobro, um dia para corrigir os defeitos</h2>
   <p>
-    O piloto rodou contra device físico real, do início ao fim do pipeline — a confiança vem de
-    três resultados concretos, não de uma promessa.
+    O piloto rodou contra um celular físico real, do início ao fim da esteira automática — a
+    confiança vem de três resultados concretos, não de uma promessa.
   </p>
 
   <div class="proof-grid">
     <div class="proof-item">
       <div class="proof-num">8</div>
-      <div class="proof-lbl">Execuções em device real</div>
-      <div class="proof-txt">Do label ao comentário na PR, sem intervenção manual em nenhuma etapa.</div>
+      <div class="proof-lbl">Execuções em celular real</div>
+      <div class="proof-txt">Da etiqueta ao comentário na PR, sem intervenção manual em nenhuma etapa.</div>
     </div>
     <div class="proof-item">
       <div class="proof-num">2×</div>
       <div class="proof-lbl">Prova diferencial confirmada</div>
-      <div class="proof-txt">O mesmo teste falhou no app com o bug e passou com a correção — nas duas rodadas, sem flake.</div>
+      <div class="proof-txt">O mesmo teste falhou no app com o bug e passou com a correção — nas duas rodadas, sem nenhum resultado inconsistente (flake).</div>
     </div>
     <div class="proof-item">
       <div class="proof-num">1 dia</div>
@@ -598,8 +623,9 @@
   <p>A régua de promoção continua humana: um teste só passa a valer depois de rodar de verdade e ser revisado.</p>
   <p>
     Depois dessas oito execuções veio a prova seguinte: a PR piloto <code>#1074</code> rodou verde
-    com <code>acceptance_criteria_source: clickup</code> — a spec saiu inteira do card do ClickUp,
-    sem nenhum aviso.
+    com <code>acceptance_criteria_source: clickup</code> — a spec (a descrição do que deve ser
+    testado) saiu inteira do card (o cartão de tarefa) do ClickUp, a ferramenta de tarefas do
+    time, sem nenhum aviso.
   </p>
 
   <!-- ═══════════ PARTE 4 ═══════════ -->
@@ -607,11 +633,12 @@
 
   <h2>A spec de teste agora vem do card, não da PR</h2>
   <p>
-    A ingestão direta está ligada em produção: o control-plane resolve o código
-    <code>AC-xxxx</code> a partir do título da PR, busca a descrição do card correspondente no
-    ClickUp e usa a spec de lá. O corpo da PR continua valendo como fallback de primeira classe —
-    não uma solução provisória, uma rota permanente para quando o card não tem spec. Cada job
-    grava de onde a spec veio: <code>acceptance_criteria_source: clickup</code> ou
+    A busca automática da spec direto no ClickUp já está ativa no sistema real (em produção): o
+    control-plane resolve o código <code>AC-xxxx</code> a partir do título da PR, busca a
+    descrição do card correspondente no ClickUp e usa a spec de lá. O corpo da proposta (PR)
+    continua valendo como alternativa automática de primeira linha — não uma solução provisória,
+    uma rota permanente para quando o card não tem spec. Cada job (cada execução automática de
+    teste) grava de onde a spec veio: <code>acceptance_criteria_source: clickup</code> ou
     <code>pr_body</code>.
   </p>
   <div class="flow3">
@@ -626,11 +653,12 @@
     <code>acceptance_criteria_source: clickup</code> — a spec saiu 100% do card, sem nenhum aviso.
   </div>
 
-  <h3>Um formato canônico: <span class="term" data-term="test-intent">test-intent/v1</span></h3>
+  <h3>Um formato oficial e único: <span class="term" data-term="test-intent">test-intent/v1</span></h3>
   <p>
-    A spec vive dentro de um bloco de código cercado cuja primeira linha é exatamente
-    <code>spec: test-intent/v1</code>. O card pode ter prosa ao redor — o pipeline extrai só o
-    bloco. Formato mergeado em <code>konsi-mobile-test-platform</code> (PR #20), documentado em
+    A spec vive dentro de um bloco de código cercado (uma seção destacada dentro do texto) cuja
+    primeira linha é exatamente <code>spec: test-intent/v1</code>. O card pode ter texto solto ao
+    redor — a esteira automática extrai só esse bloco. Formato incorporado ao repositório
+    <code>konsi-mobile-test-platform</code> (PR #20) e documentado em
     <code>docs/test-intent-spec.md</code>. Cada job grava também o formato reconhecido:
     <code>acceptance_criteria_format: test-intent/v1</code> ou <code>freeform</code>.
   </p>
@@ -665,33 +693,36 @@ criteria:
     <button class="ctl" id="copyTi" type="button">copiar template</button>
   </div>
   <p>
-    Obrigatório: <code>user_story</code> e ao menos um critério em <code>criteria</code>, cada um
-    com <code>id</code> no padrão <code>AC-&lt;n&gt;-C&lt;n&gt;</code>, <code>kind</code>
+    Obrigatório: <code>user_story</code> (a frase que descreve, no formato de história de usuário,
+    quem faz o quê e por quê) e ao menos um critério em <code>criteria</code>, cada um com
+    <code>id</code> no padrão <code>AC-&lt;n&gt;-C&lt;n&gt;</code>, <code>kind</code>
     (<code>e2e</code> ou <code>unit</code>), <code>given</code>, <code>when</code> e
-    <code>then</code> — sem isso o gate reprova. Opcional recomendado: <code>env.lane</code>,
-    <code>env.flags</code>, <code>oracle</code>, <code>risk</code>, <code>semantics_ids</code>,
-    <code>constraints</code>, <code>covered_by</code>.
+    <code>then</code> — sem isso, a barreira automática (gate) reprova a proposta. Opcional
+    recomendado: <code>env.lane</code>, <code>env.flags</code>, <code>oracle</code>,
+    <code>risk</code>, <code>semantics_ids</code>, <code>constraints</code>, <code>covered_by</code>.
   </p>
 
-  <h3>Gate obrigatório no CI</h3>
+  <h3>O gate obrigatório: sem spec, a proposta não passa</h3>
   <p>
-    Com a label <code>e2e:run</code>, o check <strong>Gate de spec E2E</strong> reprova a PR
-    quando não existe um bloco canônico válido nem no card, nem no corpo da PR. Entrou pela PR
-    <code>#1080</code> no <code>konsi-app</code>, que segue aberta: recebeu 1 aprovação em 18/jul
-    e aguarda a segunda revisão para poder mergear. Ainda não está em produção.
+    Com a etiqueta <code>e2e:run</code>, o selo <strong>Gate de spec E2E</strong> (Check) reprova
+    a PR quando não existe um bloco de spec válido nem no card, nem no corpo da proposta. Essa
+    barreira entrou pela PR <code>#1080</code> no <code>konsi-app</code>, que segue aberta:
+    recebeu 1 aprovação em 18/jul e aguarda a segunda revisão para poder ser integrada ao código
+    principal (merge). Ainda não está em produção.
   </p>
 
   <!-- ═══════════ PARTE 5 ═══════════ -->
-  <div class="part"><span class="n">Parte 5 · Fan-out multi-teste por PR</span><div class="rule"></div></div>
+  <div class="part"><span class="n">Parte 5 · Vários testes ao mesmo tempo numa mesma proposta (fan-out)</span><div class="rule"></div></div>
 
-  <h2>Uma PR, vários testes, ao mesmo tempo</h2>
+  <h2>Uma proposta, vários testes: agora tudo roda ao mesmo tempo</h2>
   <p>
-    Até 21/jul, uma PR com N casos de teste rodava todos em sequência, dentro de um único job,
-    num único device — o segundo caso só começava quando o primeiro terminasse. Desde 22/jul, o
-    control-plane divide o trabalho: cria 1 <span class="term" data-term="job-pai">job pai</span> —
-    que nunca executa teste, só coordena — e N <span class="term" data-term="job-filho">jobs
-    filho</span>, um por caso de teste, que podem rodar em devices diferentes ao mesmo tempo. A PR
-    continua recebendo um único Check agregado no final, como sempre.
+    Até 21/jul, uma PR com N casos de teste rodava todos em sequência, dentro de uma única tarefa
+    automática (job), num único celular — o segundo caso só começava quando o primeiro
+    terminasse. Desde 22/jul, o control-plane divide o trabalho: cria 1 <span class="term"
+    data-term="job-pai">job pai</span> — uma tarefa que nunca executa teste, só coordena — e N
+    <span class="term" data-term="job-filho">jobs filho</span>, um por caso de teste, que podem
+    rodar em celulares diferentes ao mesmo tempo. A PR continua recebendo um único Check agregado
+    no final, como sempre.
   </p>
 
   <div class="demo">
@@ -707,12 +738,12 @@ criteria:
         <div class="fo-child" data-c="0">
           <span class="fo-tag">filho 1</span>
           <span class="fo-state" data-state="queued">na fila</span>
-          <span class="fo-sub">device A</span>
+          <span class="fo-sub">celular A</span>
         </div>
         <div class="fo-child" data-c="1">
           <span class="fo-tag">filho 2</span>
           <span class="fo-state" data-state="queued">na fila</span>
-          <span class="fo-sub">device B</span>
+          <span class="fo-sub">celular B</span>
         </div>
         <div class="fo-child" data-c="2">
           <span class="fo-tag">filho 3</span>
@@ -724,43 +755,46 @@ criteria:
     </div>
   </div>
   <p class="caption">
-    O cap de execuções simultâneas por PR é configurável
+    O limite de execuções simultâneas por PR — o time chama isso de <em>cap</em> — é configurável
     (<code>MAESTRO_MAX_ACTIVE_CHILDREN_PER_PARENT</code>, padrão 2) — por isso o terceiro filho
     espera uma vaga liberar antes de começar. O diagrama roda em loop; sem
     <code>prefers-reduced-motion</code>, ele para no estado final (os três passaram, Check verde).
   </p>
 
   <div class="kicker">
-    <strong>No ar desde 22/jul:</strong> plataforma PR <code>#29</code>
-    (<code>KonsiLabs/konsi-mobile-test-platform</code>), mergeada e em produção — deploy confirmado
-    às 15:39 UTC do dia 22/jul (run <code>29934291511</code>). 329 testes automatizados cobrem o
-    fan-out; zero mudança no agente que roda dentro do device — todo o trabalho novo é no
-    control-plane. A entrega também corrigiu um bug real de produção: um campo <code>None</code>
-    era persistido como a string "null", o que deixava um <code>finished_at</code> fantasma em
-    jobs reabertos.
+    <strong>No ar desde 22/jul:</strong> a plataforma da PR <code>#29</code>
+    (<code>KonsiLabs/konsi-mobile-test-platform</code>) foi integrada ao código principal (merge)
+    e já está no sistema real (em produção) — a publicação (deploy) foi confirmada às 15:39 UTC
+    do dia 22/jul (execução <code>29934291511</code>). 329 testes automatizados cobrem esse
+    fan-out; o programa que roda dentro do celular não mudou nada — todo o trabalho novo
+    aconteceu no control-plane. A entrega também corrigiu um defeito real que já estava em
+    produção: um campo vazio (<code>None</code>) era guardado como a palavra "null", o que
+    deixava um horário de término (<code>finished_at</code>) fantasma em tarefas reabertas.
   </div>
 
   <p>
     <strong>O que ainda falta — por isso a manchete é "em produção", não "validado com
-    devices":</strong> existe uma PR de validação pronta, <code>konsi-app #1084</code>, com
+    celular físico":</strong> existe uma PR de validação pronta, <code>konsi-app #1084</code>, com
     exatamente 3 casos de teste <code>test-intent/v1</code> (abrir Ajuda, abrir Ajustes, rolar o
     dashboard até o topo). O esperado é 2 rodando em paralelo e 1 na fila — mas essa prova física
-    ainda não rodou: o host da farm no escritório caiu em 22/jul, e os 2 devices da lane
-    <code>post_login</code> ficaram desconectados do USB. Assim que o host voltar e a label
-    <code>e2e:run</code> for aplicada na <code>#1084</code>, essa prova acontece.
+    ainda não rodou: o host (o computador que controla a bancada de celulares) da farm no
+    escritório caiu em 22/jul, e os 2 celulares da trilha <code>post_login</code> ficaram
+    desconectados do cabo USB. Assim que o host voltar e a etiqueta <code>e2e:run</code> for
+    aplicada na <code>#1084</code>, essa prova acontece.
   </p>
   <p>
     O que já dá confiança de que o paralelismo funciona de verdade, fisicamente: em 21/jul (PR
-    <code>#24</code>) o mesmo teste rodou ao mesmo tempo em 2 devices físicos diferentes — um
-    moto g35 e um Galaxy A15, mesmo APK — e as duas execuções deram <strong>passou</strong>, em
-    37s e 44s. E o host está preparado desde 20/jul (Maestro 2.7.0, uma porta de driver por
-    worker) para paralelismo real de execução, não só de agendamento.
+    <code>#24</code>) o mesmo teste rodou ao mesmo tempo em 2 celulares físicos diferentes — um
+    moto g35 e um Galaxy A15, com o mesmo pacote do app (APK) — e as duas execuções deram
+    <strong>passou</strong>, em 37s e 44s. E o host está preparado desde 20/jul (Maestro 2.7.0,
+    uma porta de driver por worker — o processo que controla cada celular) para paralelismo real
+    de execução, não só de agendamento.
   </p>
 
-  <h3>A semana na farm (20–22/jul)</h3>
+  <h3>A semana na farm de celulares (20–22/jul)</h3>
   <p>
     O fan-out foi o topo de uma sequência de entregas na mesma semana — cada uma resolvendo um
-    problema concreto de operar uma farm de devices de verdade.
+    problema concreto de operar uma farm de celulares de verdade.
   </p>
   <div class="tbl-wrap">
   <table>
@@ -769,14 +803,16 @@ criteria:
     </thead>
     <tbody>
       <tr>
-        <td>Alocação paralela de devices</td>
+        <td>Alocação paralela de celulares</td>
         <td><code>#22</code></td>
         <td>20/jul</td>
         <td>
           O sistema aprendeu a reservar vários celulares ao mesmo tempo com
-          <span class="term" data-term="lease">leases</span> (empréstimos com dono e prazo), um
-          scheduler que prioriza PR sobre trabalho de fundo e um worker por aparelho físico.
-          +4.127 linhas em 31 arquivos — é a fundação sobre a qual o fan-out foi construído.
+          <span class="term" data-term="lease">leases</span> (empréstimos de aparelho com dono e
+          prazo), um scheduler (o programa que decide a ordem e prioridade das tarefas) que
+          prioriza a PR sobre trabalho de fundo, e um worker (processo dedicado) por aparelho
+          físico. +4.127 linhas em 31 arquivos — é a fundação sobre a qual o fan-out foi
+          construído.
         </td>
       </tr>
       <tr>
@@ -785,10 +821,10 @@ criteria:
         <td>21/jul</td>
         <td>
           A farm passou a distinguir "o app tem bug" de "o ambiente não estava pronto". Se o APK
-          não tem o canal de feature flag esperado, ou se o celular "esqueceu" a sessão logada, o
-          teste vira "pulado por pré-condição" (Check neutro) em vez de reprovar a PR. Ressalva: os
-          2 devices da lane <code>post_login</code> seguem aguardando religamento e reaquecimento
-          manual.
+          não tem o canal de feature flag esperado, ou se o celular "esqueceu" que a pessoa
+          estava logada (perdeu a sessão), o teste vira "pulado por pré-condição" (Check neutro)
+          em vez de reprovar a PR. Ressalva: os 2 celulares da trilha <code>post_login</code>
+          seguem aguardando religamento e reaquecimento manual.
         </td>
       </tr>
       <tr>
@@ -796,19 +832,21 @@ criteria:
         <td><code>#26</code></td>
         <td>21/jul</td>
         <td>
-          Quando a fila de PR está vazia, os devices rodam testes leves de manutenção, só leitura
-          (<span class="term" data-term="filler">filler</span>). Cada execução também passou a
-          registrar uma "impressão digital" das feature flags ativas, para auditoria.
+          Quando a fila de PR está vazia, os celulares rodam testes leves de manutenção, só
+          leitura (<span class="term" data-term="filler">filler</span>). Cada execução também
+          passou a registrar uma "impressão digital" das feature flags ativas, para auditoria.
         </td>
       </tr>
       <tr>
-        <td>Máquina de build dedicada</td>
+        <td>Máquina de compilação dedicada</td>
         <td>—</td>
         <td>22/jul</td>
         <td>
-          O build do APK para E2E ganhou um runner de CI próprio
-          (<code>ubuntu-24.04-4core-e2e</code>, 4 cores/16GB) no <code>konsi-app</code>.
-          Provisionado, estreia junto com a validação física — nenhum build real ainda o usou.
+          A compilação do APK para os testes E2E ganhou uma máquina própria — um <span
+          class="term" data-term="runner">runner de CI</span> (o computador que compila o app a
+          cada execução): <code>ubuntu-24.04-4core-e2e</code>, 4 cores/16GB, no
+          <code>konsi-app</code>. Já provisionada, estreia junto com a validação física — nenhuma
+          compilação real ainda a usou.
         </td>
       </tr>
     </tbody>
@@ -818,25 +856,28 @@ criteria:
   <!-- ═══════════ PARTE 6 ═══════════ -->
   <div class="part"><span class="n">Parte 6 · Próximos passos</span><div class="rule"></div></div>
 
-  <h2>Roadmap curto, sem datas</h2>
+  <h2>O que vem a seguir, sem data marcada</h2>
 
-  <h3>Compilador determinístico intent → YAML</h3>
+  <h3>Um "tradutor" fixo entre a intenção do teste e o arquivo final (YAML)</h3>
   <p>
-    A IA gera a intenção estruturada; quem escreve o YAML final é código determinístico. O
+    A IA gera a intenção estruturada (o "quê" e o "porquê" do teste); quem escreve o arquivo de
+    roteiro final — o <span class="term" data-term="yaml">YAML</span>, o formato de texto que o
+    Maestro lê para executar o teste passo a passo — é código determinístico, não a IA de novo. O
     fan-out já cobriu uma fatia disso: o novo <code>app/slicing.py</code> deriva os testes de
     forma determinística a partir do <code>reference_flow</code> de cada spec, com validações de
-    catálogo antes de virar job. Não é peça 100% entregue — falta estender esse determinismo para
-    o restante da geração de YAML —, mas é uma base real que o fan-out já validou em produção.
+    catálogo antes de virar job. Não é uma peça 100% entregue — falta estender esse determinismo
+    para o restante da geração do YAML —, mas é uma base real que o fan-out já validou em
+    produção.
   </p>
 
-  <h3>Check da PR com imagens embutidas</h3>
+  <h3>Imagens embutidas direto no Check da PR</h3>
   <p>
-    Um quarto device dedicado e expansão do mapa de áreas cobertas.
+    Um quarto celular dedicado e expansão do mapa de áreas cobertas.
   </p>
 
   <div class="kicker">
     <strong>Próximo passo concreto:</strong> religar o host da farm no escritório, reaquecer os 2
-    devices da lane <code>post_login</code> e aplicar a label <code>e2e:run</code> na PR
+    celulares da trilha <code>post_login</code> e aplicar a etiqueta <code>e2e:run</code> na PR
     <code>konsi-app #1084</code> — para colher a prova física do fan-out: 2 casos rodando em
     paralelo e 1 na fila.
   </div>
@@ -847,10 +888,32 @@ criteria:
 <aside class="gloss">
   <div class="label">Glossário</div>
   <dl>
+    <dt>PR</dt>
+    <dd>Proposta de mudança no código, também chamada de pull request. Passa pela revisão de outra pessoa antes de entrar na versão real do app.</dd>
+    <dt>label (etiqueta)</dt>
+    <dd>Marca aplicada numa PR para acionar uma automação — aqui, a etiqueta <code>e2e:run</code> dispara o teste no celular real.</dd>
+    <dt>teste E2E</dt>
+    <dd>Teste "de ponta a ponta": usa o app do início ao fim, como um cliente de verdade usaria, em vez de checar só um pedaço isolado.</dd>
+    <dt>Check</dt>
+    <dd>O selo de aprovado ou reprovado que aparece na própria PR, mostrando se aquele passo automático passou.</dd>
+    <dt>CI</dt>
+    <dd>A esteira automática que roda a cada mudança de código: compila o app, roda testes e reporta o resultado, sem intervenção manual.</dd>
+    <dt>APK</dt>
+    <dd>O pacote instalável do aplicativo Android — o arquivo que o celular realmente instala para rodar o app.</dd>
+    <dt>YAML</dt>
+    <dd>O arquivo de roteiro do teste: o formato de texto que descreve, passo a passo, o que o Maestro deve fazer no celular.</dd>
+    <dt>device farm (farm)</dt>
+    <dd>A bancada de celulares reais no escritório, usada para instalar e testar o app como um cliente faria.</dd>
+    <dt>feature flag</dt>
+    <dd>Um interruptor remoto que liga ou desliga um recurso do app sem precisar publicar uma nova versão.</dd>
+    <dt>control-plane</dt>
+    <dd>O serviço central que coordena a fila de testes: decide o que rodar, distribui o trabalho e junta o resultado final.</dd>
+    <dt>runner de CI</dt>
+    <dd>A máquina que compila o app dentro da esteira automática — não é o celular que roda o teste, é quem monta o pacote instalável antes disso.</dd>
     <dt>lane pre_login</dt>
     <dd>Trilha de testes que roda antes do fluxo de login, cobrindo as telas iniciais do app.</dd>
     <dt>Prova diferencial</dt>
-    <dd>Rodar o mesmo teste contra a versão com e sem o fix. Só conta como prova se falha numa e passa na outra.</dd>
+    <dd>Rodar o mesmo teste contra a versão com e sem a correção. Só conta como prova se falha numa e passa na outra.</dd>
     <dt>validated-only</dt>
     <dd>Modo em que só entram no relatório oficial os resultados de execuções já confirmadas como confiáveis.</dd>
     <dt>Test Intent</dt>
@@ -862,15 +925,15 @@ criteria:
     <dt>Semantics</dt>
     <dd>Identificadores estáveis de elementos na tela, usados pelo teste para localizar o que precisa tocar ou ler.</dd>
     <dt>job pai / job filho</dt>
-    <dd>No fan-out, o job pai coordena e nunca executa teste; cada job filho roda exatamente um caso de teste, podendo usar um device diferente dos irmãos.</dd>
+    <dd>No fan-out, o job pai coordena e nunca executa teste; cada job filho roda exatamente um caso de teste, podendo usar um celular diferente dos irmãos.</dd>
     <dt>fan-out</dt>
     <dd>Dividir uma PR com N casos de teste em N execuções (jobs filho) que podem rodar em paralelo, em vez de uma única execução sequencial.</dd>
     <dt>cap de concorrência</dt>
     <dd>Limite de jobs filho ativos ao mesmo tempo por PR. Configurável via <code>MAESTRO_MAX_ACTIVE_CHILDREN_PER_PARENT</code>, padrão 2.</dd>
     <dt>filler</dt>
-    <dd>Teste leve de manutenção, só leitura, que ocupa um device quando a fila de PR está vazia — para o aparelho nunca ficar parado.</dd>
+    <dd>Teste leve de manutenção, só leitura, que ocupa um celular quando a fila de PR está vazia — para o aparelho nunca ficar parado.</dd>
     <dt>lease de device</dt>
-    <dd>Reserva de um device físico com dono e prazo, usada pelo scheduler para alocar vários celulares ao mesmo tempo sem dois jobs colidirem no mesmo aparelho.</dd>
+    <dd>Reserva de um celular físico com dono e prazo, usada pelo scheduler para alocar vários aparelhos ao mesmo tempo sem dois jobs colidirem no mesmo celular.</dd>
   </dl>
 </aside>
 </div>
